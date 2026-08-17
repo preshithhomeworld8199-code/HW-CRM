@@ -109,7 +109,7 @@ function render(){
 function renderLeads(){
  let q=(document.getElementById('leadSearch')?.value||'').toLowerCase();
  let arr=data.filter(x=>`${x.name} ${x.phone} ${x.requirement}`.toLowerCase().includes(q));
- document.getElementById('leadTable').innerHTML=arr.map(x=>`<tr><td><b>${x.name}</b></td><td>${x.phone}</td><td>${x.requirement||'-'}</td><td>${x.source||'-'}</td><td>${badge(x.status)}</td><td>${x.date||'-'}</td><td><button onclick="editStatus(${x.id})">Update</button></td></tr>`).join('')||'<tr><td colspan="7" class="empty">No customers found</td></tr>';
+ document.getElementById('leadTable').innerHTML=arr.map(x=>`<tr><td><b>${x.name}</b></td><td>${x.phone}</td><td>${x.requirement||'-'}</td><td>${x.source||'-'}</td><td>${badge(x.status)}</td><td>${x.date||'-'}</td><td><button onclick="editStatus(${x.id})">Update</button> <button onclick="deleteCustomer(${x.id})" style="margin-left:4px;color:#b52222">Delete</button></td></tr>`).join('')||'<tr><td colspan="7" class="empty">No customers found</td></tr>';
 }
 function renderFollowups(){
  let arr=[...data].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
@@ -130,6 +130,15 @@ function addCustomer(){
  if(!name||!phone){alert('Please enter customer name and phone number.');return}
  let x={id:Date.now(),name,phone,requirement:document.getElementById('requirement').value,source:document.getElementById('source').value,status:document.getElementById('status').value,date:document.getElementById('date').value,amount:Number(document.getElementById('amount').value||0),salesperson:document.getElementById('salesperson').value,notes:document.getElementById('notes').value};
  data.push(x);save();closeModal();document.querySelectorAll('#modal input,#modal textarea').forEach(e=>e.value='');render();alert('Customer saved successfully.')}
+function deleteCustomer(id){
+ let x=data.find(a=>a.id===id);
+ if(!x)return;
+ if(confirm('Delete customer "'+x.name+'"? This cannot be undone.')){
+   data=data.filter(a=>a.id!==id);
+   save();
+   render();
+ }
+}
 function editStatus(id){
  let x=data.find(a=>a.id===id);if(!x)return;
  let s=prompt('Update status: New Lead / Contacted / Quotation / Follow-up / Won / Lost',x.status);if(s&&['New Lead','Contacted','Quotation','Follow-up','Won','Lost'].includes(s)){x.status=s;save();render()}
