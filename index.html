@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home World CRM Prototype</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f6f8;color:#17212b}
+.app{display:flex;min-height:100vh}.side{width:245px;background:#14283d;color:#fff;padding:22px 14px;position:fixed;inset:0 auto 0 0}.brand{font-size:24px;font-weight:800;padding:8px 12px 28px}.brand span{color:#f5b942}.nav button{width:100%;border:0;background:none;color:#dbe6ef;text-align:left;padding:13px 14px;border-radius:9px;margin:3px 0;font-size:14px;cursor:pointer}.nav button.active,.nav button:hover{background:#f5b942;color:#14283d;font-weight:700}.main{margin-left:245px;width:calc(100% - 245px);padding:25px 30px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.top h1{margin:0;font-size:27px}.top small{color:#6d7883}.actions button,.primary{background:#f5b942;border:0;padding:11px 16px;border-radius:8px;font-weight:700;cursor:pointer}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 10px #17212b12}.card .label{font-size:13px;color:#77818b}.card .num{font-size:29px;font-weight:800;margin-top:7px}.grid{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin-top:18px}.panel{background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 10px #17212b12}.panel h3{margin:0 0 15px}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:12px 9px;border-bottom:1px solid #edf0f2;text-align:left;white-space:nowrap}th{color:#66717b;background:#fafbfc}.badge{padding:5px 8px;border-radius:20px;font-size:11px;font-weight:700}.new{background:#e6f1ff;color:#2366a8}.follow{background:#fff1cf;color:#936300}.won{background:#e4f7eb;color:#237444}.lost{background:#ffe8e8;color:#b03a3a}.overdue{background:#ffe3e3;color:#b52222}.search{display:flex;gap:10px;margin-bottom:13px}.search input,.form input,.form select,.form textarea{width:100%;padding:10px;border:1px solid #d7dde3;border-radius:7px;font:inherit}.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.form .full{grid-column:1/-1}.form textarea{min-height:75px;resize:vertical}.modal{display:none;position:fixed;inset:0;background:#0007;align-items:center;justify-content:center;padding:20px}.modalbox{background:#fff;border-radius:14px;padding:22px;width:min(680px,100%);max-height:90vh;overflow:auto}.modalhead{display:flex;justify-content:space-between;align-items:center}.x{border:0;background:#eee;border-radius:50%;width:30px;height:30px;cursor:pointer}.footer{margin-top:20px;color:#7c8790;font-size:12px}.page{display:none}.page.active{display:block}.timeline div{padding:10px 0;border-bottom:1px solid #edf0f2}.timeline b{display:block}.empty{padding:25px;text-align:center;color:#88939d}@media(max-width:900px){.side{width:190px}.main{margin-left:190px;width:calc(100% - 190px);padding:20px}.cards{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}}@media(max-width:650px){.side{position:static;width:100%;height:auto}.app{display:block}.main{margin:0;width:100%}.cards{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.form{grid-template-columns:1fr}.form .full{grid-column:auto}.top{gap:10px;align-items:flex-start}.top .actions{display:flex;gap:5px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <div class="brand">HOME <span>WORLD</span></div>
+  <div class="nav">
+    <button class="active" onclick="showPage('dashboard',this)">📊 Dashboard</button>
+    <button onclick="showPage('leads',this)">👥 Customers & Leads</button>
+    <button onclick="showPage('followups',this)">🔔 Follow-ups</button>
+    <button onclick="showPage('quotations',this)">🧾 Quotations</button>
+    <button onclick="showPage('reports',this)">📈 Reports</button>
+  </div>
+</aside>
+<main class="main">
+<section id="dashboard" class="page active">
+ <div class="top"><div><h1>Dashboard</h1><small>Customer follow-up overview</small></div><div class="actions"><button onclick="openModal()">+ Add Customer</button></div></div>
+ <div class="cards">
+  <div class="card"><div class="label">Total Leads</div><div class="num" id="totalLeads">0</div></div>
+  <div class="card"><div class="label">Today's Follow-ups</div><div class="num" id="todayCount">0</div></div>
+  <div class="card"><div class="label">Pending Quotations</div><div class="num" id="pendingQuotes">0</div></div>
+  <div class="card"><div class="label">Won Customers</div><div class="num" id="wonCount">0</div></div>
+ </div>
+ <div class="grid">
+  <div class="panel"><h3>Recent Customers</h3><div class="tablewrap"><table><thead><tr><th>Customer</th><th>Phone</th><th>Requirement</th><th>Status</th><th>Follow-up</th></tr></thead><tbody id="recentTable"></tbody></table></div></div>
+  <div class="panel"><h3>Today's Follow-ups</h3><div class="timeline" id="todayList"></div></div>
+ </div>
+</section>
+
+<section id="leads" class="page">
+ <div class="top"><div><h1>Customers & Leads</h1><small>Manage every enquiry from first contact to sale</small></div><button class="primary" onclick="openModal()">+ Add Customer</button></div>
+ <div class="panel"><div class="search"><input id="leadSearch" placeholder="Search name, phone, requirement..." oninput="renderLeads()"></div>
+ <div class="tablewrap"><table><thead><tr><th>Customer</th><th>Phone</th><th>Requirement</th><th>Source</th><th>Status</th><th>Next Follow-up</th><th>Action</th></tr></thead><tbody id="leadTable"></tbody></table></div></div>
+</section>
+
+<section id="followups" class="page">
+ <div class="top"><div><h1>Follow-ups</h1><small>Never miss a customer call</small></div></div>
+ <div class="panel"><div class="tablewrap"><table><thead><tr><th>Date</th><th>Customer</th><th>Phone</th><th>Requirement</th><th>Status</th><th>Action</th></tr></thead><tbody id="followTable"></tbody></table></div></div>
+</section>
+
+<section id="quotations" class="page">
+ <div class="top"><div><h1>Quotations</h1><small>Track quotation pipeline</small></div></div>
+ <div class="panel"><div class="tablewrap"><table><thead><tr><th>Quotation</th><th>Customer</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead><tbody id="quoteTable"></tbody></table></div></div>
+</section>
+
+<section id="reports" class="page">
+ <div class="top"><div><h1>Reports</h1><small>Quick sales and follow-up summary</small></div></div>
+ <div class="cards">
+  <div class="card"><div class="label">Conversion Rate</div><div class="num" id="conversion">0%</div></div>
+  <div class="card"><div class="label">Overdue Follow-ups</div><div class="num" id="overdueCount">0</div></div>
+  <div class="card"><div class="label">Pipeline Value</div><div class="num" id="pipeline">₹0</div></div>
+  <div class="card"><div class="label">Won Value</div><div class="num" id="wonValue">₹0</div></div>
+ </div>
+ <div class="panel" style="margin-top:18px"><h3>How to use this prototype</h3><p>Add customers, assign a next follow-up date, update their status, and track quotations. Data is saved in this browser using local storage.</p></div>
+</section>
+<div class="footer">Home World Customer Follow-Up Software — working browser prototype</div>
+</main>
+</div>
+
+<div class="modal" id="modal"><div class="modalbox">
+ <div class="modalhead"><h2>Add Customer / Lead</h2><button class="x" onclick="closeModal()">×</button></div>
+ <div class="form">
+  <input id="name" placeholder="Customer name *">
+  <input id="phone" placeholder="Phone number *">
+  <input id="requirement" placeholder="Requirement (e.g. Main Door, Windows)">
+  <input id="source" placeholder="Lead source (WhatsApp, Referral, Website)">
+  <select id="status"><option>New Lead</option><option>Contacted</option><option>Quotation</option><option>Follow-up</option><option>Won</option><option>Lost</option></select>
+  <input id="date" type="date">
+  <input id="amount" type="number" placeholder="Quotation amount (₹)">
+  <input id="salesperson" placeholder="Salesperson">
+  <textarea id="notes" class="full" placeholder="Notes / last conversation"></textarea>
+  <button class="primary full" onclick="addCustomer()">Save Customer</button>
+ </div>
+</div></div>
+
+<script>
+const today=new Date().toISOString().slice(0,10);
+let data=JSON.parse(localStorage.getItem('homeWorldCRM')||'null')||[
+ {id:1,name:'Rajesh Kumar',phone:'9876543210',requirement:'Main Door - iLeaf',source:'Referral',status:'Follow-up',date:today,amount:85000,salesperson:'Sales Team',notes:'Customer requested site visit.'},
+ {id:2,name:'Priya Constructions',phone:'9840012345',requirement:'20 Steel Doors',source:'Govt Project',status:'Quotation',date:today,amount:320000,salesperson:'Arun',notes:'Quotation sent.'},
+ {id:3,name:'Suresh Builders',phone:'9988776655',requirement:'Premium Doors',source:'WhatsApp',status:'Won',date:'2026-08-10',amount:175000,salesperson:'Kumar',notes:'Order confirmed.'},
+ {id:4,name:'Green Homes',phone:'9123456789',requirement:'Windows + Doors',source:'Website',status:'Contacted',date:'2026-08-17',amount:120000,salesperson:'Arun',notes:'Call again in two days.'}
+];
+let quotes=[
+ {q:'HW-2026-001',name:'Priya Constructions',amount:320000,date:today,status:'Pending'},
+ {q:'HW-2026-002',name:'Suresh Builders',amount:175000,date:'2026-08-10',status:'Accepted'}
+];
+function save(){localStorage.setItem('homeWorldCRM',JSON.stringify(data))}
+function showPage(id,btn){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');render()}
+function badge(s){let c=s==='Won'?'won':s==='Lost'?'lost':s==='Follow-up'?'follow':s==='New Lead'?'new':'follow';return `<span class="badge ${c}">${s}</span>`}
+function render(){
+ document.getElementById('totalLeads').textContent=data.length;
+ document.getElementById('todayCount').textContent=data.filter(x=>x.date===today&&x.status!=='Won'&&x.status!=='Lost').length;
+ document.getElementById('pendingQuotes').textContent=quotes.filter(x=>x.status==='Pending').length;
+ document.getElementById('wonCount').textContent=data.filter(x=>x.status==='Won').length;
+ document.getElementById('recentTable').innerHTML=data.slice(-6).reverse().map(x=>`<tr><td><b>${x.name}</b></td><td>${x.phone}</td><td>${x.requirement||'-'}</td><td>${badge(x.status)}</td><td>${x.date||'-'}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">No customers yet</td></tr>';
+ document.getElementById('todayList').innerHTML=data.filter(x=>x.date===today&&x.status!=='Won'&&x.status!=='Lost').map(x=>`<div><b>${x.name}</b>${x.requirement||''}<br><small>${x.phone} · ${x.status}</small></div>`).join('')||'<div class="empty">No follow-ups today 🎉</div>';
+ renderLeads(); renderFollowups(); renderQuotes(); renderReports();
+}
+function renderLeads(){
+ let q=(document.getElementById('leadSearch')?.value||'').toLowerCase();
+ let arr=data.filter(x=>`${x.name} ${x.phone} ${x.requirement}`.toLowerCase().includes(q));
+ document.getElementById('leadTable').innerHTML=arr.map(x=>`<tr><td><b>${x.name}</b></td><td>${x.phone}</td><td>${x.requirement||'-'}</td><td>${x.source||'-'}</td><td>${badge(x.status)}</td><td>${x.date||'-'}</td><td><button onclick="editStatus(${x.id})">Update</button></td></tr>`).join('')||'<tr><td colspan="7" class="empty">No customers found</td></tr>';
+}
+function renderFollowups(){
+ let arr=[...data].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+ document.getElementById('followTable').innerHTML=arr.map(x=>`<tr><td>${x.date||'-'}</td><td><b>${x.name}</b></td><td>${x.phone}</td><td>${x.requirement||'-'}</td><td>${badge(x.status)}</td><td><button onclick="editStatus(${x.id})">Update</button></td></tr>`).join('');
+}
+function renderQuotes(){document.getElementById('quoteTable').innerHTML=quotes.map(x=>`<tr><td>${x.q}</td><td>${x.name}</td><td>₹${Number(x.amount).toLocaleString('en-IN')}</td><td>${x.date}</td><td>${badge(x.status==='Accepted'?'Won':x.status)}</td></tr>`).join('')}
+function renderReports(){
+ let won=data.filter(x=>x.status==='Won'), overdue=data.filter(x=>x.date&&x.date<today&&x.status!=='Won'&&x.status!=='Lost');
+ document.getElementById('conversion').textContent=data.length?Math.round(won.length/data.length*100)+'%':'0%';
+ document.getElementById('overdueCount').textContent=overdue.length;
+ document.getElementById('pipeline').textContent='₹'+data.filter(x=>x.status!=='Won'&&x.status!=='Lost').reduce((a,x)=>a+Number(x.amount||0),0).toLocaleString('en-IN');
+ document.getElementById('wonValue').textContent='₹'+won.reduce((a,x)=>a+Number(x.amount||0),0).toLocaleString('en-IN');
+}
+function openModal(){document.getElementById('modal').style.display='flex';document.getElementById('date').value=today}
+function closeModal(){document.getElementById('modal').style.display='none'}
+function addCustomer(){
+ let name=document.getElementById('name').value.trim(),phone=document.getElementById('phone').value.trim();
+ if(!name||!phone){alert('Please enter customer name and phone number.');return}
+ let x={id:Date.now(),name,phone,requirement:document.getElementById('requirement').value,source:document.getElementById('source').value,status:document.getElementById('status').value,date:document.getElementById('date').value,amount:Number(document.getElementById('amount').value||0),salesperson:document.getElementById('salesperson').value,notes:document.getElementById('notes').value};
+ data.push(x);save();closeModal();document.querySelectorAll('#modal input,#modal textarea').forEach(e=>e.value='');render();alert('Customer saved successfully.')}
+function editStatus(id){
+ let x=data.find(a=>a.id===id);if(!x)return;
+ let s=prompt('Update status: New Lead / Contacted / Quotation / Follow-up / Won / Lost',x.status);if(s&&['New Lead','Contacted','Quotation','Follow-up','Won','Lost'].includes(s)){x.status=s;save();render()}
+}
+render();
+</script>
+</body>
+</html>
