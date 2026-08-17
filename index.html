@@ -109,7 +109,7 @@ function render(){
 function renderLeads(){
  let q=(document.getElementById('leadSearch')?.value||'').toLowerCase();
  let arr=data.filter(x=>`${x.name} ${x.phone} ${x.requirement}`.toLowerCase().includes(q));
- document.getElementById('leadTable').innerHTML=arr.map(x=>`<tr><td><b>${x.name}</b></td><td>${x.phone}</td><td>${x.requirement||'-'}</td><td>${x.source||'-'}</td><td>${badge(x.status)}</td><td>${x.date||'-'}</td><td><button onclick="editStatus(${x.id})">Update</button> <button onclick="deleteCustomer(${x.id})" style="margin-left:4px;color:#b52222">Delete</button></td></tr>`).join('')||'<tr><td colspan="7" class="empty">No customers found</td></tr>';
+ document.getElementById('leadTable').innerHTML=arr.map(x=>`<tr><td><b>${x.name}</b></td><td>${x.phone}</td><td>${x.requirement||'-'}</td><td>${x.source||'-'}</td><td>${badge(x.status)}</td><td>${x.date||'-'}</td><td><button onclick="editCustomer(${x.id})">Edit</button> <button onclick="editStatus(${x.id})">Update</button> <button onclick="deleteCustomer(${x.id})" style="margin-left:4px;color:#b52222">Delete</button></td></tr>`).join('')||'<tr><td colspan="7" class="empty">No customers found</td></tr>';
 }
 function renderFollowups(){
  let arr=[...data].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
@@ -130,6 +130,21 @@ function addCustomer(){
  if(!name||!phone){alert('Please enter customer name and phone number.');return}
  let x={id:Date.now(),name,phone,requirement:document.getElementById('requirement').value,source:document.getElementById('source').value,status:document.getElementById('status').value,date:document.getElementById('date').value,amount:Number(document.getElementById('amount').value||0),salesperson:document.getElementById('salesperson').value,notes:document.getElementById('notes').value};
  data.push(x);save();closeModal();document.querySelectorAll('#modal input,#modal textarea').forEach(e=>e.value='');render();alert('Customer saved successfully.')}
+function editCustomer(id){
+ let x=data.find(a=>a.id===id); if(!x)return;
+ document.getElementById('name').value=x.name||''; document.getElementById('phone').value=x.phone||'';
+ document.getElementById('requirement').value=x.requirement||''; document.getElementById('source').value=x.source||'';
+ document.getElementById('status').value=x.status||'New Lead'; document.getElementById('date').value=x.date||today;
+ document.getElementById('amount').value=x.amount||''; document.getElementById('salesperson').value=x.salesperson||''; document.getElementById('notes').value=x.notes||'';
+ document.querySelector('#modal h2').textContent='Edit Customer / Lead';
+ let b=document.querySelector('#modal .primary'); b.textContent='Update Customer';
+ b.onclick=function(){ let name=document.getElementById('name').value.trim(), phone=document.getElementById('phone').value.trim();
+  if(!name||!phone){alert('Please enter customer name and phone number.');return}
+  x.name=name; x.phone=phone; x.requirement=document.getElementById('requirement').value; x.source=document.getElementById('source').value;
+  x.status=document.getElementById('status').value; x.date=document.getElementById('date').value; x.amount=Number(document.getElementById('amount').value||0);
+  x.salesperson=document.getElementById('salesperson').value; x.notes=document.getElementById('notes').value; save(); closeModal(); render(); alert('Customer updated successfully.');
+ }; openModal();
+}
 function deleteCustomer(id){
  let x=data.find(a=>a.id===id);
  if(!x)return;
